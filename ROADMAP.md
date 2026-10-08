@@ -1,10 +1,13 @@
 # AI Fitness Platform: 35-Day Learning & Implementation Roadmap
 
 ## Milestone 1: Core API (Days 1–7)
-- [ ] **Day 1: Setup and scaffold**
+- [x] **Day 1: Setup and scaffold**
   - Goal: Working dev environment and repository.
   - Commit: `chore: scaffold repo with health endpoint`
   - Learning Log:
+    - Initialized modular FastAPI architecture (`app/api`, `app/core`, `app/models`, `app/schemas`).
+    - Configured `.gitignore` to prevent leaking virtual envs (`.venv/`) and secrets (`.env`).
+    - Verified `GET /health` endpoint functionality with automated `pytest` test suite.
 - [ ] **Day 2: Docker Compose + database connection**
   - Goal: API and Postgres run together with one command.
   - Commit: `feat: dockerize api and postgres`
