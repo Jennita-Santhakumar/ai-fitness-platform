@@ -8,10 +8,13 @@
     - Initialized modular FastAPI architecture (`app/api`, `app/core`, `app/models`, `app/schemas`).
     - Configured `.gitignore` to prevent leaking virtual envs (`.venv/`) and secrets (`.env`).
     - Verified `GET /health` endpoint functionality with automated `pytest` test suite.
-- [ ] **Day 2: Docker Compose + database connection**
+- [x] **Day 2: Docker Compose + database connection**
   - Goal: API and Postgres run together with one command.
   - Commit: `feat: dockerize api and postgres`
   - Learning Log:
+    - Built Dockerfile for containerized Python 3.11 environment and created multi-service docker-compose.yml with PostgreSQL and data volume.
+    - Implemented Pydantic-settings config (`app/core/config.py`) and SQLAlchemy engine, sessionmaker, and `get_db` generator (`app/core/db.py`).
+    - Connected `GET /health` with `SELECT 1` query to verify database availability and wrote automated unit tests for success and 503 failure modes.
 - [ ] **Day 3: Models and migrations**
   - Goal: Database tables created through Alembic.
   - Commit: `feat(db): add models and initial migration`
