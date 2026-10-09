@@ -15,10 +15,14 @@
     - Built Dockerfile for containerized Python 3.11 environment and created multi-service docker-compose.yml with PostgreSQL and data volume.
     - Implemented Pydantic-settings config (`app/core/config.py`) and SQLAlchemy engine, sessionmaker, and `get_db` generator (`app/core/db.py`).
     - Connected `GET /health` with `SELECT 1` query to verify database availability and wrote automated unit tests for success and 503 failure modes.
-- [ ] **Day 3: Models and migrations**
+- [x] **Day 3: Models and migrations**
   - Goal: Database tables created through Alembic.
   - Commit: `feat(db): add models and initial migration`
   - Learning Log:
+    - Designed relational models (`User`, `Workout`, `Exercise`, `WorkoutSession`) using SQLAlchemy 2.0 type annotations and mapped columns.
+    - Established foreign key constraints with cascade delete behavior (`workouts.user_id`, `exercises.workout_id`, `sessions.user_id`).
+    - Configured Alembic migration environment (`alembic/env.py`) and generated initial migration script (`0001_initial_tables.py`).
+    - Verified model relationships and cascade behaviors via automated pytest suite.
 - [ ] **Day 4: Auth part 1: register**
   - Goal: Users can register with a hashed password.
   - Commit: `feat(auth): add user registration with bcrypt`
