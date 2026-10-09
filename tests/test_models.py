@@ -25,7 +25,8 @@ def db_session():
 
 def test_create_user_and_cascade_relationships(db_session):
     # 1. Create User
-    user = User(email="athlete@example.com", hashed_password="secure_hashed_password")
+    dummy_mock_hash = "$2b$12$e8Y54W6Lw5M3l8Wq3eG6reOQ5QG3m9d4E3R7yX8Z1V2b3c4d5e6f7"
+    user = User(email="athlete@example.com", hashed_password=dummy_mock_hash)
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
