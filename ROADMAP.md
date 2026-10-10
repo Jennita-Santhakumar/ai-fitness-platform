@@ -23,10 +23,14 @@
     - Established foreign key constraints with cascade delete behavior (`workouts.user_id`, `exercises.workout_id`, `sessions.user_id`).
     - Configured Alembic migration environment (`alembic/env.py`) and generated initial migration script (`0001_initial_tables.py`).
     - Verified model relationships and cascade behaviors via automated pytest suite.
-- [ ] **Day 4: Auth part 1: register**
+- [x] **Day 4: Auth part 1: register**
   - Goal: Users can register with a hashed password.
   - Commit: `feat(auth): add user registration with bcrypt`
   - Learning Log:
+    - Implemented Pydantic user schemas (`UserCreate`, `UserRead`) guaranteeing zero password/hash leakage in API responses.
+    - Built cryptographically secure password hashing and verification using `bcrypt` salting (`app/core/security.py`).
+    - Developed `POST /auth/register` with conflict rejection (`HTTP 409`) on duplicate emails.
+    - Wrote 4 comprehensive tests (success, duplicate rejection, invalid email, zero password leakage) passing with 100% success.
 - [ ] **Day 5: Auth part 2: login and JWT**
   - Goal: Login returns tokens; protected routes check them.
   - Commit: `feat(auth): add login, jwt tokens and current user dependency`
