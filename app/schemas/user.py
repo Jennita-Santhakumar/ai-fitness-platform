@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
@@ -19,3 +20,28 @@ class UserRead(UserBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class Token(BaseModel):
+    """Schema for returning access and refresh tokens upon login."""
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class AccessTokenResponse(BaseModel):
+    """Schema for returning newly issued access token upon refresh."""
+    access_token: str
+    token_type: str = "bearer"
+
+
+class RefreshTokenRequest(BaseModel):
+    """Schema for incoming token refresh request."""
+    refresh_token: str
+
+
+class TokenPayload(BaseModel):
+    """Schema for decoded token claims."""
+    sub: Optional[str] = None
+    type: Optional[str] = None
+    exp: Optional[int] = None

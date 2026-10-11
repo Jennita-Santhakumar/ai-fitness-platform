@@ -31,10 +31,15 @@
     - Built cryptographically secure password hashing and verification using `bcrypt` salting (`app/core/security.py`).
     - Developed `POST /auth/register` with conflict rejection (`HTTP 409`) on duplicate emails.
     - Wrote 4 comprehensive tests (success, duplicate rejection, invalid email, zero password leakage) passing with 100% success.
-- [ ] **Day 5: Auth part 2: login and JWT**
+- [x] **Day 5: Auth part 2: login and JWT**
   - Goal: Login returns tokens; protected routes check them.
   - Commit: `feat(auth): add login, jwt tokens and current user dependency`
   - Learning Log:
+    - Built JWT access token (30-min expiration) and refresh token (7-day expiration) signing & decoding using `python-jose` (`app/core/security.py`).
+    - Implemented `POST /auth/login` accepting OAuth2 password form and returning dual tokens.
+    - Added `POST /auth/refresh` enabling secure token renewal without re-prompting user credentials.
+    - Implemented `get_current_user` dependency validating signature, expiration, and user state, protecting `GET /users/me`.
+    - Added automated tests for successful login, invalid credentials, missing token, expired token, and refresh exchange (13 tests passing).
 - [ ] **Day 6: CRUD for workouts, exercises, sessions**
   - Goal: Authenticated users manage their own data.
   - Commit: `feat(api): add workout, exercise and session crud`
