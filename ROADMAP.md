@@ -58,7 +58,13 @@
     - Verified green CI and tagged Milestone 1 as `v0.1`.
 
 ## Milestone 2: LLM Plan Generation (Days 8–14)
-- [ ] **Day 8: LLM client interface + Groq** (`feat(llm): add provider interface and groq client`)
+- [x] **Day 8: LLM client interface + Groq**
+  - Goal: One interface, first provider working.
+  - Commit: `feat(llm): add provider interface and groq client`
+  - Learning Log:
+    - Designed `LLMProvider` abstract base class using `abc.ABC` to implement the Strategy Pattern.
+    - Implemented `GroqProvider` calling Groq's high-speed Llama 3 REST endpoint with an enforced 20-second timeout.
+    - Created throwaway verification script (`scripts/test_groq.py`) and automated unit tests for success, missing credentials, and timeout handling (21 tests passing).
 - [ ] **Day 9: Gemini and Ollama providers** (`feat(llm): add gemini and ollama providers`)
 - [ ] **Day 10: Plan schema** (`feat(plans): add plan pydantic schema`)
 - [ ] **Day 11: Prompt templates + generation** (`feat(plans): add prompt templates and plan generation`)
