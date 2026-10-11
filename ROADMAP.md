@@ -48,10 +48,14 @@
     - Implemented full RESTful CRUD routers with pagination (`limit` & `offset`).
     - Enforced strict user ownership isolation across all endpoints—unauthorized access attempts return `HTTP 404 Not Found` to prevent IDOR resource enumeration.
     - Added comprehensive multi-user ownership test suite passing with 100% success (17 tests total).
-- [ ] **Day 7: Tests, CI and tag v0.1**
+- [x] **Day 7: Tests, CI and tag v0.1**
   - Goal: 15+ tests, green CI, first release tag `v0.1`.
   - Commit: `test: add fixtures and ci workflow`
   - Learning Log:
+    - Structured comprehensive `conftest.py` with reusable `client`, `db_session`, and `auth_headers` fixtures.
+    - Achieved 17 automated passing unit and integration tests across health, models, authentication, and domain CRUD.
+    - Built GitHub Actions CI pipeline (`.github/workflows/ci.yml`) with automated PostgreSQL 15 service container.
+    - Verified green CI and tagged Milestone 1 as `v0.1`.
 
 ## Milestone 2: LLM Plan Generation (Days 8–14)
 - [ ] **Day 8: LLM client interface + Groq** (`feat(llm): add provider interface and groq client`)
