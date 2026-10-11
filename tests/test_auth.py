@@ -1,45 +1,9 @@
 from datetime import timedelta
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.pool import StaticPool
-from sqlalchemy.orm import sessionmaker
-
-from app.core.db import Base, get_db
 from app.core.security import create_access_token
-from app.main import app
-
-# Shared in-memory SQLite database using StaticPool for multi-threaded TestClient access
-engine = create_engine(
-    "sqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-@pytest.fixture(autouse=True)
-def setup_test_db():
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
-
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-app.dependency_overrides[get_db] = override_get_db
-client = TestClient(app)
-
-
-# --- Day 4 Tests ---
-
-def test_register_user_success():
+def test_register_user_success(client):
     """Test successful registration returns 201 with user details."""
     response = client.post(
         "/auth/register",
@@ -52,7 +16,7 @@ def test_register_user_success():
     assert data["is_active"] is True
 
 
-def test_register_duplicate_email_returns_409():
+def test_register_duplicate_email_returns_409(client):
     """Test duplicate registration rejects with 409 Conflict."""
     payload = {"email": "duplicate@example.com", "password": "securepassword123"}
     first_resp = client.post("/auth/register", json=payload)
@@ -63,7 +27,7 @@ def test_register_duplicate_email_returns_409():
     assert "already registered" in second_resp.json()["detail"].lower()
 
 
-def test_register_invalid_email_format():
+def test_register_invalid_email_format(client):
     """Test invalid email format is rejected with validation error (422)."""
     response = client.post(
         "/auth/register",
@@ -72,7 +36,7 @@ def test_register_invalid_email_format():
     assert response.status_code == 422
 
 
-def test_register_password_not_in_response():
+def test_register_password_not_in_response(client):
     """Test that neither plain password nor hashed_password leak in response."""
     response = client.post(
         "/auth/register",
@@ -84,9 +48,7 @@ def test_register_password_not_in_response():
     assert "hashed_password" not in data
 
 
-# --- Day 5 Tests ---
-
-def test_login_success():
+def test_login_success(client):
     """Test login with correct credentials returns access and refresh tokens."""
     client.post(
         "/auth/register",
@@ -103,7 +65,7 @@ def test_login_success():
     assert data["token_type"] == "bearer"
 
 
-def test_login_wrong_password_returns_401():
+def test_login_wrong_password_returns_401(client):
     """Test login with incorrect password returns 401 Unauthorized."""
     client.post(
         "/auth/register",
@@ -117,13 +79,13 @@ def test_login_wrong_password_returns_401():
     assert "incorrect email or password" in response.json()["detail"].lower()
 
 
-def test_users_me_without_token_returns_401():
+def test_users_me_without_token_returns_401(client):
     """Test GET /users/me without Authorization header returns 401 Unauthorized."""
     response = client.get("/users/me")
     assert response.status_code == 401
 
 
-def test_users_me_with_valid_token_returns_user():
+def test_users_me_with_valid_token_returns_user(client):
     """Test GET /users/me with valid Bearer token returns authenticated user."""
     reg_resp = client.post(
         "/auth/register",
@@ -144,7 +106,7 @@ def test_users_me_with_valid_token_returns_user():
     assert response.json()["id"] == reg_resp.json()["id"]
 
 
-def test_users_me_with_expired_token_returns_401():
+def test_users_me_with_expired_token_returns_401(client):
     """Test GET /users/me with expired token returns 401 Unauthorized."""
     reg_resp = client.post(
         "/auth/register",
@@ -153,7 +115,7 @@ def test_users_me_with_expired_token_returns_401():
     user_id = reg_resp.json()["id"]
     expired_token = create_access_token(
         subject=user_id,
-        expires_delta=timedelta(seconds=-1),  # Already expired in the past
+        expires_delta=timedelta(seconds=-1),
     )
     response = client.get(
         "/users/me",
@@ -163,7 +125,7 @@ def test_users_me_with_expired_token_returns_401():
     assert "could not validate credentials" in response.json()["detail"].lower()
 
 
-def test_refresh_token_exchange_success():
+def test_refresh_token_exchange_success(client):
     """Test exchanging a valid refresh token for a new access token."""
     client.post(
         "/auth/register",
@@ -184,7 +146,6 @@ def test_refresh_token_exchange_success():
     assert "access_token" in data
     assert data["token_type"] == "bearer"
 
-    # Verify that the newly issued access token works on /users/me
     me_resp = client.get(
         "/users/me",
         headers={"Authorization": f"Bearer {data['access_token']}"},

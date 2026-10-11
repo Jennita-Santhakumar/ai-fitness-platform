@@ -40,10 +40,14 @@
     - Added `POST /auth/refresh` enabling secure token renewal without re-prompting user credentials.
     - Implemented `get_current_user` dependency validating signature, expiration, and user state, protecting `GET /users/me`.
     - Added automated tests for successful login, invalid credentials, missing token, expired token, and refresh exchange (13 tests passing).
-- [ ] **Day 6: CRUD for workouts, exercises, sessions**
+- [x] **Day 6: CRUD for workouts, exercises, sessions**
   - Goal: Authenticated users manage their own data.
   - Commit: `feat(api): add workout, exercise and session crud`
   - Learning Log:
+    - Designed Pydantic schemas with validation rules for Workout, Exercise, and WorkoutSession.
+    - Implemented full RESTful CRUD routers with pagination (`limit` & `offset`).
+    - Enforced strict user ownership isolation across all endpoints—unauthorized access attempts return `HTTP 404 Not Found` to prevent IDOR resource enumeration.
+    - Added comprehensive multi-user ownership test suite passing with 100% success (17 tests total).
 - [ ] **Day 7: Tests, CI and tag v0.1**
   - Goal: 15+ tests, green CI, first release tag `v0.1`.
   - Commit: `test: add fixtures and ci workflow`
