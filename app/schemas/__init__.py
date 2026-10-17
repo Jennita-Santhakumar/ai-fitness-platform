@@ -32,6 +32,10 @@ from app.schemas.plan import (
     Day,
     ExerciseItem,
 )
+from app.schemas.plan_record import (
+    PlanGenerateRequest,
+    PlanRecordRead,
+)
 
 __all__ = [
     "UserBase",
@@ -58,4 +62,6 @@ __all__ = [
     "Week",
     "Day",
     "ExerciseItem",
+    "PlanGenerateRequest",
+    "PlanRecordRead",
 ]

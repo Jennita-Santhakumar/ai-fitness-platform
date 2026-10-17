@@ -97,7 +97,14 @@
     - Implemented multi-provider failover chain across Groq, Gemini, and local Ollama (`app/llm/resilience.py`).
     - Added structured JSON logging tracking provider selection, attempt numbers, and failure causes.
     - Defined custom `PlanGenerationError` and mapped it to `HTTP 502 Bad Gateway` in FastAPI exception handlers (46 tests passing).
-- [ ] **Day 13: Plan endpoints + storage** (`feat(plans): add plan endpoints and storage`)
+- [x] **Day 13: Plan endpoints + storage**
+  - Goal: Plans are saved and fetched by the user.
+  - Commit: `feat(plans): add plan endpoints and storage`
+  - Learning Log:
+    - Created `PlanRecord` SQLAlchemy model with JSON columns, foreign key to User, and calendar tracking fields (`is_active`, `start_date`).
+    - Added Alembic migration script `0002_add_plans_table.py` and exported model in `app/models/__init__.py`.
+    - Implemented protected REST endpoints: `POST /plans/generate`, `GET /plans`, and `GET /plans/{id}` with strict user ownership isolation.
+    - Added defensive input bounds (max 12 weeks, max 500 characters on free text fields) and wrote automated tests (49 tests passing).
 - [ ] **Day 14: Mocked-LLM tests and tag v0.2** (`test(plans): add mocked llm tests`)
 
 ## Milestone 3: Background Jobs (Days 15–21)

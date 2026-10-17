@@ -7,6 +7,7 @@ from app.core.db import Base
 if TYPE_CHECKING:
     from app.models.workout import Workout
     from app.models.session import WorkoutSession
+    from app.models.plan import PlanRecord
 
 
 class User(Base):
@@ -28,6 +29,9 @@ class User(Base):
     )
     sessions: Mapped[List["WorkoutSession"]] = relationship(
         "WorkoutSession", back_populates="user", cascade="all, delete-orphan"
+    )
+    plans: Mapped[List["PlanRecord"]] = relationship(
+        "PlanRecord", back_populates="user", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
