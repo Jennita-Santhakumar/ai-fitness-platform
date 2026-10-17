@@ -81,7 +81,14 @@
     - Added domain validators enforcing 1-12 weeks, 1-7 days per week, and sets/reps strictly > 0.
     - Verified automatic JSON Schema export via `Plan.model_json_schema()` for zero-drift LLM prompt injection.
     - Implemented 5 comprehensive unit tests checking valid plans, week count bounds, day count bounds, and negative values (35 tests passing).
-- [ ] **Day 11: Prompt templates + generation** (`feat(plans): add prompt templates and plan generation`)
+- [x] **Day 11: Prompt templates + generation**
+  - Goal: Generate a plan from user inputs.
+  - Commit: `feat(plans): add prompt templates and plan generation`
+  - Learning Log:
+    - Built dynamic system prompt embedding `Plan.model_json_schema()` and strict safety/exercise rules (`app/llm/prompts.py`).
+    - Implemented user prompt generator mapping goal, level, equipment, days/week, weeks, and physical limitations.
+    - Implemented `strip_code_fences` to sanitize markdown code blocks and conversational filler from LLM outputs.
+    - Built `generate_plan(inputs, provider)` and tested 5 distinct persona outputs in `docs/prompt_log.md` (42 tests passing).
 - [ ] **Day 12: Reliability: retry, timeout, failover** (`feat(llm): add retry, timeout and provider failover`)
 - [ ] **Day 13: Plan endpoints + storage** (`feat(plans): add plan endpoints and storage`)
 - [ ] **Day 14: Mocked-LLM tests and tag v0.2** (`test(plans): add mocked llm tests`)
