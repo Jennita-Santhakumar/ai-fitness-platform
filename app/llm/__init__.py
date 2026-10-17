@@ -1,3 +1,4 @@
+from app.core.exceptions import PlanGenerationError
 from app.llm.base import LLMProvider
 from app.llm.groq_provider import GroqProvider
 from app.llm.gemini_provider import GeminiProvider
@@ -9,14 +10,17 @@ from app.llm.prompts import (
     get_user_prompt,
     strip_code_fences,
 )
+from app.llm.resilience import generate_plan_with_failover
 
 __all__ = [
+    "PlanGenerationError",
     "LLMProvider",
     "GroqProvider",
     "GeminiProvider",
     "OllamaProvider",
     "get_llm_provider",
     "generate_plan",
+    "generate_plan_with_failover",
     "get_system_prompt",
     "get_user_prompt",
     "strip_code_fences",

@@ -89,7 +89,14 @@
     - Implemented user prompt generator mapping goal, level, equipment, days/week, weeks, and physical limitations.
     - Implemented `strip_code_fences` to sanitize markdown code blocks and conversational filler from LLM outputs.
     - Built `generate_plan(inputs, provider)` and tested 5 distinct persona outputs in `docs/prompt_log.md` (42 tests passing).
-- [ ] **Day 12: Reliability: retry, timeout, failover** (`feat(llm): add retry, timeout and provider failover`)
+- [x] **Day 12: Reliability: retry, timeout, failover**
+  - Goal: Bad output and outages do not crash the app.
+  - Commit: `feat(llm): add retry, timeout and provider failover`
+  - Learning Log:
+    - Built self-correcting validation retry loop (up to 2 retries) appending exact Pydantic/JSON errors to the prompt.
+    - Implemented multi-provider failover chain across Groq, Gemini, and local Ollama (`app/llm/resilience.py`).
+    - Added structured JSON logging tracking provider selection, attempt numbers, and failure causes.
+    - Defined custom `PlanGenerationError` and mapped it to `HTTP 502 Bad Gateway` in FastAPI exception handlers (46 tests passing).
 - [ ] **Day 13: Plan endpoints + storage** (`feat(plans): add plan endpoints and storage`)
 - [ ] **Day 14: Mocked-LLM tests and tag v0.2** (`test(plans): add mocked llm tests`)
 
