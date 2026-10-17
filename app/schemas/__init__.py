@@ -26,6 +26,12 @@ from app.schemas.session import (
     SessionUpdate,
     SessionRead,
 )
+from app.schemas.plan import (
+    Plan,
+    Week,
+    Day,
+    ExerciseItem,
+)
 
 __all__ = [
     "UserBase",
@@ -48,4 +54,8 @@ __all__ = [
     "SessionCreate",
     "SessionUpdate",
     "SessionRead",
+    "Plan",
+    "Week",
+    "Day",
+    "ExerciseItem",
 ]

@@ -73,7 +73,14 @@
     - Implemented `OllamaProvider` connecting to local Ollama daemon for offline zero-cost fallback.
     - Implemented `get_llm_provider` factory in `app/llm/factory.py` with runtime configuration dispatching.
     - Built provider latency benchmark script (`scripts/compare_providers.py`) and added unit test coverage (30 tests passing).
-- [ ] **Day 10: Plan schema** (`feat(plans): add plan pydantic schema`)
+- [x] **Day 10: Plan schema**
+  - Goal: A strict Pydantic model for a multi-week plan.
+  - Commit: `feat(plans): add plan pydantic schema`
+  - Learning Log:
+    - Designed strict Pydantic hierarchy (`Plan`, `Week`, `Day`, `ExerciseItem`) for validating multi-week AI workout plans.
+    - Added domain validators enforcing 1-12 weeks, 1-7 days per week, and sets/reps strictly > 0.
+    - Verified automatic JSON Schema export via `Plan.model_json_schema()` for zero-drift LLM prompt injection.
+    - Implemented 5 comprehensive unit tests checking valid plans, week count bounds, day count bounds, and negative values (35 tests passing).
 - [ ] **Day 11: Prompt templates + generation** (`feat(plans): add prompt templates and plan generation`)
 - [ ] **Day 12: Reliability: retry, timeout, failover** (`feat(llm): add retry, timeout and provider failover`)
 - [ ] **Day 13: Plan endpoints + storage** (`feat(plans): add plan endpoints and storage`)
