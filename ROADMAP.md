@@ -65,7 +65,14 @@
     - Designed `LLMProvider` abstract base class using `abc.ABC` to implement the Strategy Pattern.
     - Implemented `GroqProvider` calling Groq's high-speed Llama 3 REST endpoint with an enforced 20-second timeout.
     - Created throwaway verification script (`scripts/test_groq.py`) and automated unit tests for success, missing credentials, and timeout handling (21 tests passing).
-- [ ] **Day 9: Gemini and Ollama providers** (`feat(llm): add gemini and ollama providers`)
+- [x] **Day 9: Gemini and Ollama providers**
+  - Goal: Three providers behind one interface.
+  - Commit: `feat(llm): add gemini and ollama providers`
+  - Learning Log:
+    - Implemented `GeminiProvider` using Google Generative Language REST API with structured JSON output and 20s timeout.
+    - Implemented `OllamaProvider` connecting to local Ollama daemon for offline zero-cost fallback.
+    - Implemented `get_llm_provider` factory in `app/llm/factory.py` with runtime configuration dispatching.
+    - Built provider latency benchmark script (`scripts/compare_providers.py`) and added unit test coverage (30 tests passing).
 - [ ] **Day 10: Plan schema** (`feat(plans): add plan pydantic schema`)
 - [ ] **Day 11: Prompt templates + generation** (`feat(plans): add prompt templates and plan generation`)
 - [ ] **Day 12: Reliability: retry, timeout, failover** (`feat(llm): add retry, timeout and provider failover`)

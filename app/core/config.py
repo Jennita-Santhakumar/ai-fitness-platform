@@ -14,7 +14,8 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/ai_fitness"
 
-    # LLM Providers (for Milestone 2)
+    # LLM Providers (Milestone 2)
+    DEFAULT_LLM_PROVIDER: str = "groq"
     GROQ_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
     OLLAMA_BASE_URL: str = "http://localhost:11434"
