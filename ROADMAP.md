@@ -105,7 +105,15 @@
     - Added Alembic migration script `0002_add_plans_table.py` and exported model in `app/models/__init__.py`.
     - Implemented protected REST endpoints: `POST /plans/generate`, `GET /plans`, and `GET /plans/{id}` with strict user ownership isolation.
     - Added defensive input bounds (max 12 weeks, max 500 characters on free text fields) and wrote automated tests (49 tests passing).
-- [ ] **Day 14: Mocked-LLM tests and tag v0.2** (`test(plans): add mocked llm tests`)
+- [x] **Day 14: Mocked-LLM tests and tag v0.2**
+  - Goal: LLM logic is tested without real calls.
+  - Commit: `test(plans): add mocked llm tests`
+  - Learning Log:
+    - Designed `FakeProvider` test double implementing `LLMProvider` for deterministic, zero-cost offline testing.
+    - Added unit tests for valid JSON, self-correction retry on invalid JSON, persistent failure exhaustion, and timeout failover.
+    - Injected `FakeProvider` into FastAPI endpoints using `app.dependency_overrides[get_llm_providers]`.
+    - Updated `README.md` with full Plans & LLM Generation architecture documentation.
+    - Verified all 54 tests pass offline without external API keys and tagged release `v0.2`.
 
 ## Milestone 3: Background Jobs (Days 15–21)
 - [ ] **Day 15: Redis + Celery hello world** (`feat(jobs): add celery and redis`)

@@ -1,3 +1,4 @@
+from typing import List, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
@@ -6,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.core.security import decode_token
 from app.models.user import User
+from app.llm.base import LLMProvider
 
 # Points FastAPI to the login endpoint for Swagger UI Authorize button
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -49,3 +51,11 @@ def get_current_user(
         )
 
     return user
+
+
+def get_llm_providers() -> Optional[List[LLMProvider]]:
+    """
+    Returns custom LLM providers if injected, or None to use default chain.
+    Can be overridden in tests via app.dependency_overrides[get_llm_providers].
+    """
+    return None

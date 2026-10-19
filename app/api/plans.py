@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_llm_providers
 from app.core.db import get_db
+from app.llm.base import LLMProvider
 from app.llm.resilience import generate_plan_with_failover
 from app.models.plan import PlanRecord
 from app.models.user import User
@@ -23,10 +24,13 @@ def generate_workout_plan(
     request: PlanGenerateRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    llm_providers: Optional[List[LLMProvider]] = Depends(get_llm_providers),
 ):
     """Generates an AI workout plan with failover and stores it in the database."""
     inputs = request.model_dump()
-    plan, provider_name, _ = generate_plan_with_failover(inputs=inputs)
+    plan, provider_name, _ = generate_plan_with_failover(
+        inputs=inputs, custom_providers=llm_providers
+    )
 
     plan_record = PlanRecord(
         user_id=current_user.id,
