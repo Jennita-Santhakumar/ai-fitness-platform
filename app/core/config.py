@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     OLLAMA_BASE_URL: str = "http://localhost:11434"
 
+    # Background Tasks & Cache (Milestone 3)
+    REDIS_URL: str = "redis://localhost:6379/0"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

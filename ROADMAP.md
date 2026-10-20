@@ -116,7 +116,14 @@
     - Verified all 54 tests pass offline without external API keys and tagged release `v0.2`.
 
 ## Milestone 3: Background Jobs (Days 15–21)
-- [ ] **Day 15: Redis + Celery hello world** (`feat(jobs): add celery and redis`)
+- [x] **Day 15: Redis + Celery hello world**
+  - Goal: A worker runs a task.
+  - Commit: `feat(jobs): add celery and redis`
+  - Learning Log:
+    - Added Redis service (`redis:7-alpine`) and dedicated Celery worker service to `docker-compose.yml`.
+    - Initialized Celery application in `app/worker.py` configuring Redis as message broker and result backend.
+    - Implemented and verified `app.worker.add` task with synchronous and asynchronous test runners.
+    - Achieved 57 passing tests across all test suites without external service dependencies in CI.
 - [ ] **Day 16: Async plan generation + status** (`feat(jobs): add async plan generation`)
 - [ ] **Day 17: Daily briefing + beat** (`feat(jobs): add daily briefing task`)
 - [ ] **Day 18: Weekly review** (`feat(jobs): add weekly review task`)
