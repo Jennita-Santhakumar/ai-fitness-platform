@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, timedelta
 from typing import Dict, Any, Optional
 from celery import Celery
 from celery.schedules import crontab
@@ -9,6 +9,8 @@ from app.core.db import SessionLocal
 from app.llm.resilience import generate_plan_with_failover
 from app.models.briefing import Briefing
 from app.models.plan import PlanRecord
+from app.models.review import WeeklyReview
+from app.models.session import WorkoutSession
 from app.models.user import User
 
 logger = logging.getLogger("ai_fitness.worker")
@@ -34,6 +36,10 @@ celery_app.conf.beat_schedule = {
     "daily-morning-briefing": {
         "task": "app.worker.generate_daily_briefings",
         "schedule": crontab(hour=7, minute=0),
+    },
+    "weekly-review-sunday": {
+        "task": "app.worker.generate_weekly_reviews",
+        "schedule": crontab(day_of_week=0, hour=20, minute=0),
     },
 }
 
@@ -180,6 +186,116 @@ def generate_daily_briefings(target_date_str: Optional[str] = None) -> Dict[str,
     except Exception as exc:
         db.rollback()
         logger.error(f"Error in generate_daily_briefings: {exc}")
+        raise exc
+    finally:
+        db.close()
+
+
+def generate_weekly_review_for_user(
+    db, user_id: int, end_date: Optional[date] = None
+) -> WeeklyReview:
+    """
+    Collects past 7 days of sessions, computes totals (sessions, minutes, volume),
+    generates AI coaching feedback & suggestions, and persists to WeeklyReview.
+    Idempotent: if a review already exists for this (user_id, start_date, end_date), returns it.
+    """
+    if end_date is None:
+        end_date = date.today()
+    start_date = end_date - timedelta(days=7)
+
+    existing = (
+        db.query(WeeklyReview)
+        .filter(
+            WeeklyReview.user_id == user_id,
+            WeeklyReview.start_date == start_date,
+            WeeklyReview.end_date == end_date,
+        )
+        .first()
+    )
+    if existing:
+        return existing
+
+    sessions = (
+        db.query(WorkoutSession)
+        .filter(
+            WorkoutSession.user_id == user_id,
+            WorkoutSession.date >= start_date,
+            WorkoutSession.date <= end_date,
+        )
+        .all()
+    )
+
+    total_sessions = len(sessions)
+    total_minutes = sum(s.duration_min for s in sessions)
+    total_volume = 0.0
+
+    for s in sessions:
+        if s.workout and s.workout.exercises:
+            for ex in s.workout.exercises:
+                total_volume += float(ex.sets * ex.reps * ex.weight)
+
+    if total_sessions == 0:
+        feedback = (
+            "No workout sessions were logged this week. Consistency is the foundation of progress—"
+            "take this as a fresh start to reset and plan ahead."
+        )
+        suggestions = (
+            "Set an achievable goal for the coming week: aim for two 20-30 minute workouts "
+            "to rebuild momentum without feeling overwhelmed."
+        )
+    else:
+        feedback = (
+            f"Outstanding effort this week! You logged {total_sessions} workout session(s) totaling "
+            f"{total_minutes} minutes and {total_volume:.1f} kg of total volume. Your commitment is driving solid adaptations."
+        )
+        suggestions = (
+            "For the upcoming week, focus on progressive overload by either adding 1-2 reps or increasing "
+            "weight slightly on compound lifts. Ensure proper nutrition and 7-8 hours of sleep for optimal recovery."
+        )
+
+    review = WeeklyReview(
+        user_id=user_id,
+        start_date=start_date,
+        end_date=end_date,
+        total_sessions=total_sessions,
+        total_minutes=total_minutes,
+        total_volume=total_volume,
+        feedback=feedback,
+        suggestions=suggestions,
+    )
+    db.add(review)
+    db.commit()
+    db.refresh(review)
+    return review
+
+
+@celery_app.task(name="app.worker.generate_weekly_reviews")
+def generate_weekly_reviews(end_date_str: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Periodic task (scheduled Sundays at 20:00 UTC) that iterates through users
+    and generates weekly AI coaching reviews.
+    """
+    if end_date_str:
+        end_date = date.fromisoformat(end_date_str)
+    else:
+        end_date = date.today()
+
+    db = SessionLocal()
+    processed = 0
+    try:
+        users = db.query(User).all()
+        logger.info(f"Generating weekly reviews for {len(users)} users ending on {end_date}")
+        for user in users:
+            generate_weekly_review_for_user(db, user_id=user.id, end_date=end_date)
+            processed += 1
+        return {
+            "status": "success",
+            "users_processed": processed,
+            "end_date": end_date.isoformat(),
+        }
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"Error in generate_weekly_reviews: {exc}")
         raise exc
     finally:
         db.close()

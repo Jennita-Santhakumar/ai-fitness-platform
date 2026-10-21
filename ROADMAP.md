@@ -140,8 +140,15 @@
     - Added periodic `generate_daily_briefings` background task and configured Celery Beat schedule for daily 07:00 UTC dispatch.
     - Added `beat` container service to `docker-compose.yml`.
     - Created protected `GET /briefings/today` endpoint returning personalized workout briefings.
-    - Wrote comprehensive unit and integration tests verifying task generation, idempotency, and ownership isolation (69 passing tests).
-- [ ] **Day 18: Weekly review** (`feat(jobs): add weekly review task`)
+- [x] **Day 18: Weekly review**
+  - Goal: LLM summarizes your week.
+  - Commit: `feat(jobs): add weekly review task`
+  - Learning Log:
+    - Created `WeeklyReview` model aggregating past 7 days of training metrics (`total_sessions`, `total_minutes`, `total_volume`) with unique period constraint.
+    - Added Alembic migration `0004_add_weekly_reviews_table.py` and exported model in `app/models/__init__.py`.
+    - Implemented `generate_weekly_reviews` background task and configured Celery Beat schedule for Sundays at 20:00 UTC.
+    - Added protected `GET /reviews/latest` endpoint returning the most recent coaching summary and next-week suggestions.
+    - Wrote tests verifying metric aggregation from real `WorkoutSession` and `Exercise` data, zero-session handling, idempotency, and isolation (76 passing tests).
 - [ ] **Day 19: Retries, idempotency, failure handling** (`feat(jobs): add retries and idempotency`)
 - [ ] **Day 20: Strava OAuth** (`feat(integrations): add strava oauth`)
 - [ ] **Day 21: Strava sync and tag v0.3** (`feat(integrations): add strava activity sync`)
