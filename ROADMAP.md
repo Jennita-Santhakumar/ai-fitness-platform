@@ -131,8 +131,16 @@
     - Added `POST /plans/generate-async` returning `HTTP 202 Accepted` and `task_id` in milliseconds.
     - Added `GET /tasks/{task_id}` returning lifecycle status (`pending`, `started`, `success`, `failure`) and created `plan_id`.
     - Persisted generated plans into PostgreSQL inside the worker process with dedicated `SessionLocal()` transactions.
-    - Configured Celery eager in-memory test fixtures and verified full asynchronous lifecycle across 63 passing tests.
-- [ ] **Day 17: Daily briefing + beat** (`feat(jobs): add daily briefing task`)
+- [x] **Day 17: Daily briefing + beat**
+  - Goal: A scheduled job runs every morning.
+  - Commit: `feat(jobs): add daily briefing task`
+  - Learning Log:
+    - Created `Briefing` model with unique constraint on `(user_id, date)` for idempotent daily execution.
+    - Added Alembic migration `0003_add_briefings_table.py` and exported model in `app/models/__init__.py`.
+    - Added periodic `generate_daily_briefings` background task and configured Celery Beat schedule for daily 07:00 UTC dispatch.
+    - Added `beat` container service to `docker-compose.yml`.
+    - Created protected `GET /briefings/today` endpoint returning personalized workout briefings.
+    - Wrote comprehensive unit and integration tests verifying task generation, idempotency, and ownership isolation (69 passing tests).
 - [ ] **Day 18: Weekly review** (`feat(jobs): add weekly review task`)
 - [ ] **Day 19: Retries, idempotency, failure handling** (`feat(jobs): add retries and idempotency`)
 - [ ] **Day 20: Strava OAuth** (`feat(integrations): add strava oauth`)

@@ -4,5 +4,6 @@ from app.models.workout import Workout
 from app.models.exercise import Exercise
 from app.models.session import WorkoutSession
 from app.models.plan import PlanRecord
+from app.models.briefing import Briefing
 
-__all__ = ["Base", "User", "Workout", "Exercise", "WorkoutSession", "PlanRecord"]
+__all__ = ["Base", "User", "Workout", "Exercise", "WorkoutSession", "PlanRecord", "Briefing"]
