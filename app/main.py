@@ -8,6 +8,7 @@ from app.api.users import router as users_router
 from app.api.workouts import router as workouts_router
 from app.api.sessions import router as sessions_router
 from app.api.plans import router as plans_router
+from app.api.tasks import router as tasks_router
 from app.core.config import settings
 from app.core.db import get_db
 from app.core.exceptions import PlanGenerationError
@@ -36,6 +37,7 @@ app.include_router(users_router)
 app.include_router(workouts_router)
 app.include_router(sessions_router)
 app.include_router(plans_router)
+app.include_router(tasks_router)
 
 
 @app.get("/health", tags=["Health"])

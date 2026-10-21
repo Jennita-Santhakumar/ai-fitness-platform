@@ -123,8 +123,15 @@
     - Added Redis service (`redis:7-alpine`) and dedicated Celery worker service to `docker-compose.yml`.
     - Initialized Celery application in `app/worker.py` configuring Redis as message broker and result backend.
     - Implemented and verified `app.worker.add` task with synchronous and asynchronous test runners.
-    - Achieved 57 passing tests across all test suites without external service dependencies in CI.
-- [ ] **Day 16: Async plan generation + status** (`feat(jobs): add async plan generation`)
+- [x] **Day 16: Async plan generation + status**
+  - Goal: Long LLM calls no longer block requests.
+  - Commit: `feat(jobs): add async plan generation`
+  - Learning Log:
+    - Wrapped multi-provider LLM workout plan generation inside background Celery task `generate_plan_task`.
+    - Added `POST /plans/generate-async` returning `HTTP 202 Accepted` and `task_id` in milliseconds.
+    - Added `GET /tasks/{task_id}` returning lifecycle status (`pending`, `started`, `success`, `failure`) and created `plan_id`.
+    - Persisted generated plans into PostgreSQL inside the worker process with dedicated `SessionLocal()` transactions.
+    - Configured Celery eager in-memory test fixtures and verified full asynchronous lifecycle across 63 passing tests.
 - [ ] **Day 17: Daily briefing + beat** (`feat(jobs): add daily briefing task`)
 - [ ] **Day 18: Weekly review** (`feat(jobs): add weekly review task`)
 - [ ] **Day 19: Retries, idempotency, failure handling** (`feat(jobs): add retries and idempotency`)

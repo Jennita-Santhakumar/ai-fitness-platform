@@ -9,8 +9,29 @@ from app.llm.resilience import generate_plan_with_failover
 from app.models.plan import PlanRecord
 from app.models.user import User
 from app.schemas.plan_record import PlanGenerateRequest, PlanRecordRead
+from app.schemas.tasks import TaskInitResponse
+from app.worker import generate_plan_task
 
 router = APIRouter(prefix="/plans", tags=["Workout Plans"])
+
+
+@router.post(
+    "/generate-async",
+    response_model=TaskInitResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Enqueue AI workout plan generation in background",
+    description="Validates inputs and dispatches a Celery background job, returning HTTP 202 with task_id.",
+)
+def generate_workout_plan_async(
+    request: PlanGenerateRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """Dispatches plan generation to background Celery worker."""
+    task = generate_plan_task.delay(
+        user_id=current_user.id,
+        inputs=request.model_dump(),
+    )
+    return TaskInitResponse(task_id=task.id, status="pending")
 
 
 @router.post(

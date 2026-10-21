@@ -15,6 +15,11 @@ test_engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
+from app.core import db as core_db
+from app import worker as app_worker
+core_db.SessionLocal = TestingSessionLocal
+app_worker.SessionLocal = TestingSessionLocal
+
 
 @pytest.fixture(autouse=True)
 def db_session():
