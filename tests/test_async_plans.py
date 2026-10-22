@@ -24,32 +24,6 @@ def sample_valid_plan_obj():
     })
 
 
-@pytest.fixture
-def eager_celery():
-    """Configures Celery to run tasks in eager mode and store results in-memory."""
-    orig_broker = celery_app.conf.broker_url
-    orig_backend = celery_app.conf.result_backend
-    orig_eager = celery_app.conf.task_always_eager
-    orig_store = celery_app.conf.task_store_eager_result
-    orig_prop = celery_app.conf.task_eager_propagates
-
-    celery_app.conf.update(
-        broker_url="memory://",
-        result_backend="cache+memory://",
-        task_always_eager=True,
-        task_store_eager_result=True,
-        task_eager_propagates=False,
-    )
-    yield celery_app
-    celery_app.conf.update(
-        broker_url=orig_broker,
-        result_backend=orig_backend,
-        task_always_eager=orig_eager,
-        task_store_eager_result=orig_store,
-        task_eager_propagates=orig_prop,
-    )
-
-
 def test_generate_plan_async_returns_202_accepted(eager_celery, client, auth_headers):
     """Verify POST /plans/generate-async returns HTTP 202 with task_id."""
     headers = auth_headers("asyncuser1@example.com")

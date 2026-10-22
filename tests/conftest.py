@@ -22,6 +22,32 @@ app_worker.SessionLocal = TestingSessionLocal
 
 
 @pytest.fixture(autouse=True)
+def configure_celery_test_mode():
+    """Ensure Celery always runs in-memory and in eager mode across all tests."""
+    from app.worker import celery_app
+
+    celery_app.conf.update(
+        broker_url="memory://",
+        result_backend="cache+memory://",
+        task_always_eager=True,
+        task_store_eager_result=True,
+        task_eager_propagates=False,
+    )
+    celery_app.backend_cls = None
+    celery_app._backend = celery_app._get_backend()
+    for t in celery_app.tasks.values():
+        t.store_eager_result = True
+
+    yield celery_app
+
+
+@pytest.fixture
+def eager_celery(configure_celery_test_mode):
+    """Provides celery_app for tests."""
+    return configure_celery_test_mode
+
+
+@pytest.fixture(autouse=True)
 def db_session():
     """Recreate clean tables before each test and drop them after."""
     Base.metadata.create_all(bind=test_engine)

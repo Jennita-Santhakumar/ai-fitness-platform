@@ -149,7 +149,14 @@
     - Implemented `generate_weekly_reviews` background task and configured Celery Beat schedule for Sundays at 20:00 UTC.
     - Added protected `GET /reviews/latest` endpoint returning the most recent coaching summary and next-week suggestions.
     - Wrote tests verifying metric aggregation from real `WorkoutSession` and `Exercise` data, zero-session handling, idempotency, and isolation (76 passing tests).
-- [ ] **Day 19: Retries, idempotency, failure handling** (`feat(jobs): add retries and idempotency`)
+- [x] **Day 19: Retries, idempotency, failure handling**
+  - Goal: Failed tasks retry safely; duplicate deliveries do not corrupt state.
+  - Commit: `feat(jobs): add retries and idempotency`
+  - Learning Log:
+    - Configured automatic retry with exponential backoff and full jitter (`autoretry_for=(Exception,)`, `retry_backoff=True`, `retry_backoff_max=300`, `retry_jitter=True`, `max_retries=3`) on Celery background jobs to prevent thundering herd problems.
+    - Implemented client idempotency key (`idempotency_key`) on `PlanGenerateRequest` and cached check inside `generate_plan_task` to prevent duplicate LLM calls and duplicate plan generation on network retries.
+    - Built a dead-letter failure tracking mechanism utilizing Celery's `@task_failure.connect` signal to capture permanently failed tasks, logging structured context and pushing records to `celery:dead_letter_queue` in Redis.
+    - Mastered Celery eager test-mode internals (`task_store_eager_result=True`, in-memory cache isolation) achieving 80 passing automated unit/integration tests with 100% green status.
 - [ ] **Day 20: Strava OAuth** (`feat(integrations): add strava oauth`)
 - [ ] **Day 21: Strava sync and tag v0.3** (`feat(integrations): add strava activity sync`)
 

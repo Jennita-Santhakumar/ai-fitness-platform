@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from typing import Dict, Any, Optional
 from celery import Celery
 from celery.schedules import crontab
+from celery.signals import task_failure
 
 from app.core.config import settings
 from app.core.db import SessionLocal
@@ -14,6 +15,47 @@ from app.models.session import WorkoutSession
 from app.models.user import User
 
 logger = logging.getLogger("ai_fitness.worker")
+
+# Dead-letter failure log tracking exhausted tasks
+DEAD_LETTER_LOG = []
+
+
+@task_failure.connect
+def handle_task_failure(
+    sender=None,
+    task_id=None,
+    exception=None,
+    args=None,
+    kwargs=None,
+    traceback=None,
+    einfo=None,
+    **other,
+):
+    """
+    Dead-letter signal handler: logs structured failure context and stores
+    permanently failed tasks for introspection and alerting.
+    """
+    failure_record = {
+        "task_id": task_id,
+        "task_name": sender.name if sender else "unknown",
+        "exception_type": type(exception).__name__ if exception else "UnknownException",
+        "exception_message": str(exception),
+        "args": [str(a) for a in (args or [])],
+        "kwargs": {k: str(v) for k, v in (kwargs or {}).items()},
+    }
+    DEAD_LETTER_LOG.append(failure_record)
+    logger.error(
+        f"[DEAD-LETTER-QUEUE] Task {failure_record['task_name']} [{task_id}] failed permanently after max retries: "
+        f"{failure_record['exception_type']}: {failure_record['exception_message']}"
+    )
+    try:
+        import json
+        from redis import Redis
+
+        redis_client = Redis.from_url(settings.REDIS_URL)
+        redis_client.lpush("celery:dead_letter_queue", json.dumps(failure_record))
+    except Exception:
+        pass
 
 # Initialize Celery app with Redis as message broker and result backend
 celery_app = Celery(
@@ -29,6 +71,7 @@ celery_app.conf.update(
     timezone="UTC",
     enable_utc=True,
     task_track_started=True,
+    task_store_eager_result=True,
 )
 
 # Celery Beat schedule for periodic jobs
@@ -50,22 +93,54 @@ def add(x: int, y: int) -> int:
     return x + y
 
 
-@celery_app.task(name="app.worker.generate_plan_task", bind=True)
+@celery_app.task(
+    name="app.worker.generate_plan_task",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+    max_retries=3,
+)
 def generate_plan_task(self, user_id: int, inputs: Dict[str, Any]) -> Dict[str, Any]:
     """
     Background Celery task that:
-    1. Invokes the LLM failover engine to generate a multi-week plan.
-    2. Persists the PlanRecord into PostgreSQL.
-    3. Returns metadata including the new plan_id.
+    1. Validates idempotency key to prevent duplicate generations on network retry.
+    2. Invokes the LLM failover engine with exponential backoff on transient errors.
+    3. Persists the PlanRecord into PostgreSQL.
+    4. Returns metadata including the new plan_id.
     """
-    logger.info(f"Task {self.request.id} started: generating plan for user_id={user_id}")
+    logger.info(
+        f"Task {self.request.id} attempt {self.request.retries}: generating plan for user_id={user_id}"
+    )
 
-    # Generate plan with multi-provider failover
-    plan, provider_name, retries = generate_plan_with_failover(inputs=inputs)
-
-    # Persist in DB using a dedicated worker session
     db = SessionLocal()
     try:
+        # Idempotency check: return existing plan if same idempotency_key was already processed
+        idempotency_key = inputs.get("idempotency_key")
+        if idempotency_key:
+            recent_plans = (
+                db.query(PlanRecord)
+                .filter(PlanRecord.user_id == user_id)
+                .order_by(PlanRecord.created_at.desc())
+                .limit(20)
+                .all()
+            )
+            for p in recent_plans:
+                if isinstance(p.inputs, dict) and p.inputs.get("idempotency_key") == idempotency_key:
+                    logger.info(
+                        f"Task {self.request.id}: returning cached plan {p.id} for idempotency_key={idempotency_key}"
+                    )
+                    return {
+                        "plan_id": p.id,
+                        "provider": p.provider,
+                        "retries": self.request.retries,
+                        "cached": True,
+                    }
+
+        # Generate plan with multi-provider failover
+        plan, provider_name, retries = generate_plan_with_failover(inputs=inputs)
+
         plan_record = PlanRecord(
             user_id=user_id,
             inputs=inputs,
@@ -87,7 +162,7 @@ def generate_plan_task(self, user_id: int, inputs: Dict[str, Any]) -> Dict[str, 
         }
     except Exception as exc:
         db.rollback()
-        logger.error(f"Task {self.request.id} DB insertion failed: {str(exc)}")
+        logger.error(f"Task {self.request.id} attempt {self.request.retries} failed: {str(exc)}")
         raise exc
     finally:
         db.close()
@@ -159,8 +234,16 @@ def generate_briefing_for_user(db, user_id: int, target_date: date) -> Briefing:
     return briefing
 
 
-@celery_app.task(name="app.worker.generate_daily_briefings")
-def generate_daily_briefings(target_date_str: Optional[str] = None) -> Dict[str, Any]:
+@celery_app.task(
+    name="app.worker.generate_daily_briefings",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+    max_retries=3,
+)
+def generate_daily_briefings(self, target_date_str: Optional[str] = None) -> Dict[str, Any]:
     """
     Periodic task (scheduled daily at 07:00 UTC) that iterates through users
     and generates daily workout briefings.
@@ -269,8 +352,16 @@ def generate_weekly_review_for_user(
     return review
 
 
-@celery_app.task(name="app.worker.generate_weekly_reviews")
-def generate_weekly_reviews(end_date_str: Optional[str] = None) -> Dict[str, Any]:
+@celery_app.task(
+    name="app.worker.generate_weekly_reviews",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+    max_retries=3,
+)
+def generate_weekly_reviews(self, end_date_str: Optional[str] = None) -> Dict[str, Any]:
     """
     Periodic task (scheduled Sundays at 20:00 UTC) that iterates through users
     and generates weekly AI coaching reviews.
