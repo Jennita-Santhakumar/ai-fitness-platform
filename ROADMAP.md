@@ -262,7 +262,14 @@
     - Built comprehensive evaluation engine `eval/run_eval.py` tracking schema validity, multi-week progression adherence, days per week accuracy, equipment constraints, and injury safety rules.
     - Generated quantitative evaluation benchmark report in `docs/eval_results.md` demonstrating **100% schema validity** and **100% constraint adherence**.
     - Added automated unit test suite (`tests/test_eval.py`) validating prompt data integrity and constraint failure detection.
-- [ ] **Day 32: Security and robustness pass** (`fix(security): add rate limiting and input limits`)
+- [x] **Day 32: Security and robustness pass**
+  - Goal: Harden against common attacks and resource exhaustion.
+  - Commit: `fix(security): add rate limiting and input limits`
+  - Learning Log:
+    - Integrated `slowapi` rate limiting across sensitive and computationally intensive endpoints: `/auth/register` (15/min), `/auth/login` (10/min), `/plans/generate` (10/min), and `/plans/generate-async` (15/min).
+    - Enforced strict length limits on free-form text input fields in `PlanGenerateRequest` (goal max 100 chars, equipment max 200 chars, injuries max 500 chars) to prevent prompt injection and token bloat.
+    - Verified strict row-level ownership isolation returning `HTTP 404 Not Found` (rather than 403) across all resources to prevent IDOR enumeration attacks.
+    - Added comprehensive automated security test suite (`tests/test_security_rate_limit.py`) — 178 total tests passing.
 - [ ] **Day 33: Production compose + docs** (`docs: add readme and architecture`)
 - [ ] **Day 34: Deploy** (`chore: add deployment config`)
 - [ ] **Day 35: Final polish and resume update, tag v1.0** (`docs: final polish for v1.0`)

@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
 from sqlalchemy.orm import Session
+
+from app.core.limiter import limiter
 
 from app.core.db import get_db
 from app.core.security import (
@@ -30,7 +32,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     summary="Register a new user",
     description="Registers a new user with an email and password. Rejects duplicate emails with HTTP 409 Conflict.",
 )
-def register(user_in: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("15/minute")
+def register(request: Request, user_in: UserCreate, db: Session = Depends(get_db)):
     """Register a new user with bcrypt password hashing."""
     existing_user = db.query(User).filter(User.email == user_in.email).first()
     if existing_user:
@@ -57,7 +60,9 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     summary="Login to obtain access and refresh tokens",
     description="Standard OAuth2 password flow. Provide username (email) and password to get JWT tokens.",
 )
+@limiter.limit("10/minute")
 def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):

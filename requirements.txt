@@ -14,3 +14,4 @@ celery>=5.3.6
 redis>=5.0.3
 chromadb>=0.4.24
 pytest-cov>=5.0.0
+slowapi>=0.1.9

@@ -17,12 +17,19 @@ from app.api.nutrition import router as nutrition_router
 from app.core.config import settings
 from app.core.db import get_db
 from app.core.exceptions import PlanGenerationError
+from app.core.limiter import limiter
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Backend API for AI-powered workout planning, nutrition tracking, and analytics.",
     version="0.1.0",
 )
+
+# Attach rate limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS Configuration (Milestone 4, Day 26)
 app.add_middleware(

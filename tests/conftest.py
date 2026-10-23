@@ -48,6 +48,27 @@ def eager_celery(configure_celery_test_mode):
 
 
 @pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    """Reset the slowapi in-memory rate limiter storage before each test.
+
+    Without this, repeated login/register calls in the rate-limit test
+    consume the shared in-memory counter and cause 429 errors in subsequent
+    tests that rely on auth_headers to register and login.
+    """
+    from app.core.limiter import limiter
+    # The default storage is limits.storage.MemoryStorage; reset its internal state.
+    try:
+        limiter._storage.reset()
+    except Exception:
+        # Some storage backends don't expose reset(); clear internal dicts directly.
+        storage = limiter._storage
+        for attr in ("_data", "_expirations", "_events", "_moving_window_data"):
+            if hasattr(storage, attr):
+                getattr(storage, attr).clear()
+    yield
+
+
+@pytest.fixture(autouse=True)
 def db_session():
     """Recreate clean tables before each test and drop them after."""
     Base.metadata.create_all(bind=test_engine)
