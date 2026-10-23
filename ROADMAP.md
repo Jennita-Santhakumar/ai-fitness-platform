@@ -270,6 +270,13 @@
     - Enforced strict length limits on free-form text input fields in `PlanGenerateRequest` (goal max 100 chars, equipment max 200 chars, injuries max 500 chars) to prevent prompt injection and token bloat.
     - Verified strict row-level ownership isolation returning `HTTP 404 Not Found` (rather than 403) across all resources to prevent IDOR enumeration attacks.
     - Added comprehensive automated security test suite (`tests/test_security_rate_limit.py`) — 178 total tests passing.
-- [ ] **Day 33: Production compose + docs** (`docs: add readme and architecture`)
+- [x] **Day 33: Production compose + docs**
+  - Goal: Anyone can run this with one command; you can explain the whole thing.
+  - Commit: `docs: add readme and architecture`
+  - Learning Log:
+    - Authored comprehensive system architecture document in `docs/architecture.md` including complete ASCII system diagrams, component breakdowns, security model, and data flow.
+    - Created immutable `docker-compose.prod.yml` configured with `restart: always`, automated health checks across all 6 services, and containerized Nginx serving the React frontend on port 80.
+    - Added complete API endpoint documentation in `README.md` spanning all 6 core domains with rate limits, parameters, and authentication requirements.
+    - Added quickstart guides for both local development and one-command Docker Compose runs.
 - [ ] **Day 34: Deploy** (`chore: add deployment config`)
 - [ ] **Day 35: Final polish and resume update, tag v1.0** (`docs: final polish for v1.0`)
