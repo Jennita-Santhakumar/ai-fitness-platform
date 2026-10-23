@@ -150,10 +150,10 @@ class TestSearchFood:
         assert results[0]["fat"] == 0.3
 
         # Verify cached in Redis for 1 day (86400 seconds)
-        mock_redis.setex.assert_called_once()
-        args, kwargs = mock_redis.setex.call_args
+        mock_redis.set.assert_called_once()
+        args, kwargs = mock_redis.set.call_args
         assert "usda:search:banana" in args[0]
-        assert args[1] == 86400
+        assert kwargs.get("ex") == 86400 or (len(args) > 2 and args[2] == 86400)
 
     @patch("app.nutrition.usda.httpx.get")
     def test_search_food_cache_hit(self, mock_get):
@@ -229,10 +229,10 @@ class TestGetNutrients:
         assert food_info["fat"] == 0.3
 
         # Verify Redis caching
-        mock_redis.setex.assert_called_once()
-        args = mock_redis.setex.call_args[0]
+        mock_redis.set.assert_called_once()
+        args, kwargs = mock_redis.set.call_args
         assert "usda:food:173944" in args[0]
-        assert args[1] == 86400
+        assert kwargs.get("ex") == 86400 or (len(args) > 2 and args[2] == 86400)
 
     @patch("app.nutrition.usda.httpx.get")
     def test_get_nutrients_cache_hit(self, mock_get):

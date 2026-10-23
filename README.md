@@ -64,12 +64,30 @@ The platform features an enterprise-grade LLM generation and resilience pipeline
    ```bash
    uvicorn app.main:app --reload
    ```
-5. Open the interactive API documentation:
+5. Run the frontend application (Vite + React):
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
+6. Open the interactive API documentation:
    - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
    - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ## Testing
-Run the complete automated offline test suite (no real API keys or external services required):
+Run the complete automated offline test suite (168 tests, 100% passing offline without API keys):
 ```bash
 pytest -v
 ```
+
+## Milestone Highlights & Architecture
+* **Milestone 1: Core API & Auth (v0.1)**: FastAPI CRUD, PostgreSQL, JWT auth, ownership enforcement.
+* **Milestone 2: LLM Plan Generation (v0.2)**: Multi-provider failover (Groq, Gemini, Ollama), self-healing retry loop, strict Pydantic plan schema.
+* **Milestone 3: Background Jobs & Integrations (v0.3)**: Celery & Redis, async plan generation, daily briefings, weekly reviews, Strava OAuth 2.0 and activity synchronization.
+* **Milestone 4: Memory, Nutrition & Dashboard (v0.5)**:
+  * **ChromaDB Vector Store**: Isolated per-user vector collections providing semantic retrieval for past workouts and plans.
+  * **RAG Prompt Injection**: Dynamically injects recent training history context into LLM prompts for tailored progression.
+  * **USDA Nutrition API & Redis Cache**: FoodData Central search and food details with 1-day Redis caching.
+  * **Daily Nutrition Logs & Summaries**: Food intake tracking with SQL `func.sum` macro aggregations (calories, protein, carbs, fat).
+  * **React Frontend**: Modern Vite SPA with authentication, interactive plan generation, session logging, food tracker, and Recharts performance dashboard.

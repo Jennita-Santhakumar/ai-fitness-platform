@@ -145,9 +145,9 @@ def search_food(
     # 3. Store in Redis cache with 1 day TTL
     if redis is not None:
         try:
-            redis.setex(cache_key, REDIS_CACHE_TTL, json.dumps(results))
+            redis.set(cache_key, json.dumps(results), ex=REDIS_CACHE_TTL)
         except Exception as exc:
-            logger.warning(f"Redis setex failed for key {cache_key}: {exc}")
+            logger.warning(f"Redis set failed for key {cache_key}: {exc}")
 
     return results
 
@@ -204,8 +204,8 @@ def get_nutrients(
     # 3. Store in Redis cache
     if redis is not None:
         try:
-            redis.setex(cache_key, REDIS_CACHE_TTL, json.dumps(result))
+            redis.set(cache_key, json.dumps(result), ex=REDIS_CACHE_TTL)
         except Exception as exc:
-            logger.warning(f"Redis setex failed for key {cache_key}: {exc}")
+            logger.warning(f"Redis set failed for key {cache_key}: {exc}")
 
     return result

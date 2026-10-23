@@ -236,7 +236,14 @@
     - Integrated `Recharts` visualizations in `Dashboard` showing last 7 days of workout minutes and 5-day caloric intake trend.
     - Built comprehensive Strava connection and sync widget directly inside the athlete dashboard.
     - Added display cards for daily workout briefings (`GET /briefings/today`) and weekly coaching reviews (`GET /reviews/latest`).
-- [ ] **Day 29: Integrate, polish, tag v0.5** (`chore: integrate and polish for v0.5`)
+- [x] **Day 29: Integrate, polish, tag v0.5**
+  - Goal: The minimum viable product works end to end.
+  - Commit: `chore: integrate and polish for v0.5`
+  - Learning Log:
+    - Executed and validated full end-to-end user lifecycle flow: registration, authentication, Strava connectivity, session logging, AI plan generation, USDA food search, nutrition logging, and daily macro calculations.
+    - Added automated full-flow regression integration suite (`tests/test_e2e_flow.py`).
+    - Added frontend container service to `docker-compose.yml` and production multi-stage build `Dockerfile` for Vite frontend.
+    - Updated documentation in `README.md` and tagged milestone release `v0.5`.
 
 ## Milestone 5: Quality and Ship (Days 30–35)
 - [ ] **Day 30: Coverage and test gaps** (`test: improve coverage`)

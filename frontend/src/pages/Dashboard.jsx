@@ -180,13 +180,13 @@ export const Dashboard = () => {
           <div style={styles.stravaBox}>
             <div style={styles.stravaHeader}>
               <span style={styles.stravaTitle}>🟠 Strava Sync</span>
-              <span style={stravaStatus?.is_connected ? styles.connectedTag : styles.disconnectedTag}>
-                {stravaStatus?.is_connected ? 'Connected' : 'Not Connected'}
+              <span style={stravaStatus?.connected ? styles.connectedTag : styles.disconnectedTag}>
+                {stravaStatus?.connected ? 'Connected' : 'Not Connected'}
               </span>
             </div>
             {stravaMsg && <div style={styles.stravaMsg}>{stravaMsg}</div>}
             <div style={styles.stravaActions}>
-              {stravaStatus?.is_connected ? (
+              {stravaStatus?.connected ? (
                 <>
                   <button onClick={handleSyncStrava} disabled={syncingStrava} style={styles.syncBtn}>
                     {syncingStrava ? 'Syncing...' : '🔄 Sync Activities'}
