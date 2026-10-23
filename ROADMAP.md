@@ -209,7 +209,15 @@
     - Implemented RESTful logging endpoints: `POST /nutrition/logs`, `GET /nutrition/logs?date=`, and `DELETE /nutrition/logs/{id}` with strict user ownership isolation.
     - Built daily aggregation endpoint `GET /nutrition/summary?date=` utilizing `SQLAlchemy func.sum` and `func.coalesce` to compute daily calorie, protein, carbohydrate, and fat totals.
     - Added automated test suite verifying logging CRUD, deletion, user isolation, and multi-entry mathematical aggregation (7 tests passing, 167 total project tests).
-- [ ] **Day 26: React scaffold + auth** (`feat(ui): add react app with auth`)
+- [x] **Day 26: React scaffold + auth**
+  - Goal: Frontend can log in.
+  - Commit: `feat(ui): add react app with auth`
+  - Learning Log:
+    - Scaffolded modern React application with Vite, `react-router-dom`, and `axios`.
+    - Added CORS middleware in FastAPI enabling dev origin requests (`localhost:5173`, `localhost:3000`).
+    - Implemented centralized `api.js` Axios client with JWT request interceptor and automatic token refresh queue handling on HTTP 401.
+    - Built `AuthProvider` context managing authentication lifecycle (`login`, `register`, `logout`, `user` state).
+    - Created `Login` and `Register` views, responsive `Navbar`, and `ProtectedRoute` boundary guarding authenticated routes.
 - [ ] **Day 27: Plan and session pages** (`feat(ui): add plan and session pages`)
 - [ ] **Day 28: Nutrition page + dashboard** (`feat(ui): add nutrition page and dashboard`)
 - [ ] **Day 29: Integrate, polish, tag v0.5** (`chore: integrate and polish for v0.5`)

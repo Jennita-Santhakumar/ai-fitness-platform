@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -21,6 +22,19 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Backend API for AI-powered workout planning, nutrition tracking, and analytics.",
     version="0.1.0",
+)
+
+# CORS Configuration (Milestone 4, Day 26)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Exception Handlers
