@@ -12,6 +12,7 @@ from app.api.tasks import router as tasks_router
 from app.api.briefings import router as briefings_router
 from app.api.reviews import router as reviews_router
 from app.api.strava import router as strava_router
+from app.api.nutrition import router as nutrition_router
 from app.core.config import settings
 from app.core.db import get_db
 from app.core.exceptions import PlanGenerationError
@@ -44,6 +45,7 @@ app.include_router(tasks_router)
 app.include_router(briefings_router)
 app.include_router(reviews_router)
 app.include_router(strava_router)
+app.include_router(nutrition_router)
 
 
 @app.get("/health", tags=["Health"])

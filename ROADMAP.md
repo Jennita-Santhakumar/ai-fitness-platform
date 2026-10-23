@@ -191,7 +191,15 @@
     - Augmented user prompt templates to include structured `TRAINING HISTORY CONTEXT` block.
     - Extended `generate_plan` with optional `user_id` to dynamically fetch and inject memory context into LLM prompts.
     - Tested prompt formatting, graceful fallback when memory is empty, and mock LLM plan generation (10 tests passing).
-- [ ] **Day 24: USDA nutrition client** (`feat(nutrition): add usda client and search`)
+- [x] **Day 24: USDA nutrition client**
+  - Goal: Search foods and get macros.
+  - Commit: `feat(nutrition): add usda client and search`
+  - Learning Log:
+    - Built USDA FoodData Central integration in `app/nutrition/usda.py` querying the `/foods/search` and `/food/{id}` endpoints.
+    - Implemented robust `extract_macros` utility normalizing calorie, protein, carbohydrate, and fat counts across differing USDA JSON schema variants.
+    - Added Redis caching layer with 1-day TTL (86,400s) and graceful fallback handling in the event of Redis downtime.
+    - Exposed authenticated `GET /nutrition/search?q=` endpoint returning typed `FoodSearchResponse`.
+    - Wrote 13 unit tests for macro extraction, cache hit/miss behavior, Redis degradation, and API endpoints (160 total project tests passing).
 - [ ] **Day 25: Nutrition log** (`feat(nutrition): add food log and daily summary`)
 - [ ] **Day 26: React scaffold + auth** (`feat(ui): add react app with auth`)
 - [ ] **Day 27: Plan and session pages** (`feat(ui): add plan and session pages`)

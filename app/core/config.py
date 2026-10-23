@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # ChromaDB Memory Store (Milestone 4, Day 22)
     CHROMA_PERSIST_DIR: str = "./chroma_data"
 
+    # USDA FoodData Central (Milestone 4, Day 24)
+    USDA_API_KEY: str = "DEMO_KEY"
+    USDA_BASE_URL: str = "https://api.nal.usda.gov/fdc/v1"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

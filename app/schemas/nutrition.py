@@ -1,0 +1,29 @@
+from typing import List, Optional
+from pydantic import BaseModel, Field
+
+
+class MacroNutrients(BaseModel):
+    """Macronutrient profile for a food item or serving."""
+    calories: float = Field(default=0.0, ge=0, description="Energy in kcal")
+    protein: float = Field(default=0.0, ge=0, description="Protein in grams")
+    carbs: float = Field(default=0.0, ge=0, description="Total carbohydrates in grams")
+    fat: float = Field(default=0.0, ge=0, description="Total lipid (fat) in grams")
+
+
+class FoodSearchResultItem(BaseModel):
+    """A single food item returned from search."""
+    fdc_id: int = Field(..., description="USDA FoodData Central unique identifier")
+    name: str = Field(..., description="Description / common name of the food")
+    calories: float = Field(default=0.0, ge=0, description="Calories in kcal per 100g or serving")
+    protein: float = Field(default=0.0, ge=0, description="Protein in grams")
+    carbs: float = Field(default=0.0, ge=0, description="Carbohydrates in grams")
+    fat: float = Field(default=0.0, ge=0, description="Fat in grams")
+    serving_size: Optional[float] = Field(None, description="Serving size amount if available")
+    serving_unit: Optional[str] = Field(None, description="Serving size unit (e.g. g, ml, cup)")
+
+
+class FoodSearchResponse(BaseModel):
+    """Response envelope for food search queries."""
+    query: str = Field(..., description="The query string that was searched")
+    results: List[FoodSearchResultItem] = Field(default_factory=list, description="List of matching food items")
+    total_hits: int = Field(default=0, ge=0, description="Total search matches found")
