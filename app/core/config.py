@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     # Background Tasks & Cache (Milestone 3)
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # Strava OAuth Integration (Milestone 3, Day 20)
+    STRAVA_CLIENT_ID: str = ""
+    STRAVA_CLIENT_SECRET: str = ""
+    STRAVA_REDIRECT_URI: str = "http://localhost:8000/integrations/strava/callback"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

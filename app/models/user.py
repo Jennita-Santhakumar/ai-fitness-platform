@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from typing import List, TYPE_CHECKING
-from sqlalchemy import String, DateTime
+from typing import List, Optional, TYPE_CHECKING
+from sqlalchemy import String, DateTime, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.db import Base
 
@@ -22,6 +22,13 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
+    # Strava OAuth 2.0 Credentials (Day 20)
+    strava_athlete_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    strava_access_token: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    strava_refresh_token: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    strava_expires_at: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    strava_scope: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     # Relationships
     workouts: Mapped[List["Workout"]] = relationship(

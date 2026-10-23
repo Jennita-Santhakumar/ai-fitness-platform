@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 from typing import Optional, TYPE_CHECKING
-from sqlalchemy import Date, Integer, Text, DateTime, ForeignKey
+from sqlalchemy import BigInteger, Date, Integer, Text, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.db import Base
 
@@ -22,6 +22,7 @@ class WorkoutSession(Base):
     date: Mapped[date] = mapped_column(Date, nullable=False, default=date.today)
     duration_min: Mapped[int] = mapped_column(Integer, nullable=False, default=45)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    strava_activity_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, unique=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
