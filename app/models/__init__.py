@@ -6,5 +6,6 @@ from app.models.session import WorkoutSession
 from app.models.plan import PlanRecord
 from app.models.briefing import Briefing
 from app.models.review import WeeklyReview
+from app.models.food_log import FoodLog
 
-__all__ = ["Base", "User", "Workout", "Exercise", "WorkoutSession", "PlanRecord", "Briefing", "WeeklyReview"]
+__all__ = ["Base", "User", "Workout", "Exercise", "WorkoutSession", "PlanRecord", "Briefing", "WeeklyReview", "FoodLog"]

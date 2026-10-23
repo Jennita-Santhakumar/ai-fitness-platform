@@ -200,7 +200,15 @@
     - Added Redis caching layer with 1-day TTL (86,400s) and graceful fallback handling in the event of Redis downtime.
     - Exposed authenticated `GET /nutrition/search?q=` endpoint returning typed `FoodSearchResponse`.
     - Wrote 13 unit tests for macro extraction, cache hit/miss behavior, Redis degradation, and API endpoints (160 total project tests passing).
-- [ ] **Day 25: Nutrition log** (`feat(nutrition): add food log and daily summary`)
+- [x] **Day 25: Nutrition log**
+  - Goal: Track daily intake.
+  - Commit: `feat(nutrition): add food log and daily summary`
+  - Learning Log:
+    - Designed `FoodLog` model with foreign key relation to `User` and indexed `date` and `fdc_id` columns.
+    - Created Alembic migration `0007_add_food_logs_table.py`.
+    - Implemented RESTful logging endpoints: `POST /nutrition/logs`, `GET /nutrition/logs?date=`, and `DELETE /nutrition/logs/{id}` with strict user ownership isolation.
+    - Built daily aggregation endpoint `GET /nutrition/summary?date=` utilizing `SQLAlchemy func.sum` and `func.coalesce` to compute daily calorie, protein, carbohydrate, and fat totals.
+    - Added automated test suite verifying logging CRUD, deletion, user isolation, and multi-entry mathematical aggregation (7 tests passing, 167 total project tests).
 - [ ] **Day 26: React scaffold + auth** (`feat(ui): add react app with auth`)
 - [ ] **Day 27: Plan and session pages** (`feat(ui): add plan and session pages`)
 - [ ] **Day 28: Nutrition page + dashboard** (`feat(ui): add nutrition page and dashboard`)
