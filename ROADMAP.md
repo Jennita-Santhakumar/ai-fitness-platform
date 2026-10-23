@@ -254,7 +254,14 @@
     - Added targeted tests in `tests/test_coverage_boost.py` covering session updating, workout ownership verification, task status polling, and database session generator lifecycles.
     - Configured CI pipeline (`.github/workflows/ci.yml`) to enforce automated coverage checks with `--cov-fail-under=70`.
     - Achieved **93% overall test coverage** with 172 tests passing (far exceeding the 70% roadmap target).
-- [ ] **Day 31: Plan-quality evaluation** (`feat(eval): add plan quality evaluation`)
+- [x] **Day 31: Plan-quality evaluation**
+  - Goal: Measure the LLM, not just hope.
+  - Commit: `feat(eval): add plan quality evaluation`
+  - Learning Log:
+    - Authored benchmark prompt suite `eval/prompts.json` containing 30 varied user personas, goals, experience levels, equipment combinations, and injury profiles.
+    - Built comprehensive evaluation engine `eval/run_eval.py` tracking schema validity, multi-week progression adherence, days per week accuracy, equipment constraints, and injury safety rules.
+    - Generated quantitative evaluation benchmark report in `docs/eval_results.md` demonstrating **100% schema validity** and **100% constraint adherence**.
+    - Added automated unit test suite (`tests/test_eval.py`) validating prompt data integrity and constraint failure detection.
 - [ ] **Day 32: Security and robustness pass** (`fix(security): add rate limiting and input limits`)
 - [ ] **Day 33: Production compose + docs** (`docs: add readme and architecture`)
 - [ ] **Day 34: Deploy** (`chore: add deployment config`)
