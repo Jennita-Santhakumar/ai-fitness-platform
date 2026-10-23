@@ -218,7 +218,15 @@
     - Implemented centralized `api.js` Axios client with JWT request interceptor and automatic token refresh queue handling on HTTP 401.
     - Built `AuthProvider` context managing authentication lifecycle (`login`, `register`, `logout`, `user` state).
     - Created `Login` and `Register` views, responsive `Navbar`, and `ProtectedRoute` boundary guarding authenticated routes.
-- [ ] **Day 27: Plan and session pages** (`feat(ui): add plan and session pages`)
+- [x] **Day 27: Plan and session pages**
+  - Goal: Use the core features from the UI.
+  - Commit: `feat(ui): add plan and session pages`
+  - Learning Log:
+    - Built comprehensive `Plans` page with interactive plan generation form (goals, level, equipment, days/week, weeks, injury constraints).
+    - Implemented background task polling loop against `GET /tasks/{task_id}` with live progress feedback, error alerts, and auto-render of completed plans.
+    - Designed structured plan view displaying multi-week progression, daily focus, and detailed exercise tables (sets, reps, rest, notes).
+    - Built `Sessions` page with manual workout logger (date, duration, notes) and Strava background sync trigger with instant UI refresh.
+    - Added session history timeline distinguishing manual entries from Strava synced activities with deletion capability.
 - [ ] **Day 28: Nutrition page + dashboard** (`feat(ui): add nutrition page and dashboard`)
 - [ ] **Day 29: Integrate, polish, tag v0.5** (`chore: integrate and polish for v0.5`)
 
