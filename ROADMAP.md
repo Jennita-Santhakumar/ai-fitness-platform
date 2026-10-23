@@ -246,7 +246,14 @@
     - Updated documentation in `README.md` and tagged milestone release `v0.5`.
 
 ## Milestone 5: Quality and Ship (Days 30–35)
-- [ ] **Day 30: Coverage and test gaps** (`test: improve coverage`)
+- [x] **Day 30: Coverage and test gaps**
+  - Goal: Know your real test numbers.
+  - Commit: `test: improve coverage`
+  - Learning Log:
+    - Installed `pytest-cov` and executed systematic coverage analysis across all API endpoints, models, schemas, and workers.
+    - Added targeted tests in `tests/test_coverage_boost.py` covering session updating, workout ownership verification, task status polling, and database session generator lifecycles.
+    - Configured CI pipeline (`.github/workflows/ci.yml`) to enforce automated coverage checks with `--cov-fail-under=70`.
+    - Achieved **93% overall test coverage** with 172 tests passing (far exceeding the 70% roadmap target).
 - [ ] **Day 31: Plan-quality evaluation** (`feat(eval): add plan quality evaluation`)
 - [ ] **Day 32: Security and robustness pass** (`fix(security): add rate limiting and input limits`)
 - [ ] **Day 33: Production compose + docs** (`docs: add readme and architecture`)

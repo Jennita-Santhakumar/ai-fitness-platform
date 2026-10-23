@@ -41,9 +41,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run pytest test suite
+      - name: Run pytest test suite with coverage
         env:
           DATABASE_URL: postgresql+psycopg2://postgres:postgres@localhost:5432/ai_fitness_test
           SECRET_KEY: ci_test_secret_key_environment
         run: |
-          pytest -v
+          pytest -v --cov=app --cov-report=term-missing --cov-fail-under=70
