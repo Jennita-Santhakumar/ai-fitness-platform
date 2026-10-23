@@ -278,5 +278,12 @@
     - Created immutable `docker-compose.prod.yml` configured with `restart: always`, automated health checks across all 6 services, and containerized Nginx serving the React frontend on port 80.
     - Added complete API endpoint documentation in `README.md` spanning all 6 core domains with rate limits, parameters, and authentication requirements.
     - Added quickstart guides for both local development and one-command Docker Compose runs.
-- [ ] **Day 34: Deploy** (`chore: add deployment config`)
+- [x] **Day 34: Deploy**
+  - Goal: It lives on the internet (or is ready to deploy in one command).
+  - Commit: `chore: add deployment config`
+  - Learning Log:
+    - Authored multi-service `render.yaml` blueprint defining isolated starter plans for PostgreSQL, Redis, FastAPI web service, Celery async worker, Celery beat cron scheduler, and React static frontend.
+    - Added `Procfile` configured for Heroku/Railway deployment with automated release phase running `alembic upgrade head`.
+    - Implemented `docker-entrypoint.sh` executing automatic database migrations before starting the ASGI server in production containers.
+    - Configured production secret environment documentation and secure container orchestration ready for cloud deployment.
 - [ ] **Day 35: Final polish and resume update, tag v1.0** (`docs: final polish for v1.0`)
