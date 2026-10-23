@@ -1,6 +1,6 @@
 import logging
 from datetime import date, timedelta
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 from celery import Celery
 from celery.schedules import crontab
 from celery.signals import task_failure
@@ -83,6 +83,10 @@ celery_app.conf.beat_schedule = {
     "weekly-review-sunday": {
         "task": "app.worker.generate_weekly_reviews",
         "schedule": crontab(day_of_week=0, hour=20, minute=0),
+    },
+    "daily-strava-sync": {
+        "task": "app.worker.sync_all_strava_activities",
+        "schedule": crontab(hour=6, minute=0),  # runs at 06:00 UTC daily
     },
 }
 
@@ -388,5 +392,93 @@ def generate_weekly_reviews(self, end_date_str: Optional[str] = None) -> Dict[st
         db.rollback()
         logger.error(f"Error in generate_weekly_reviews: {exc}")
         raise exc
+    finally:
+        db.close()
+
+
+@celery_app.task(
+    name="app.worker.sync_user_strava_activities",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=120,
+    retry_jitter=True,
+    max_retries=3,
+)
+def sync_user_strava_activities(self, user_id: int) -> Dict[str, Any]:
+    """
+    Background Celery task to sync Strava activities for a single user.
+    Called directly from the API endpoint POST /integrations/strava/sync.
+    """
+    from app.services.strava_sync import sync_strava_activities
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return {"status": "error", "detail": "User not found"}
+        if not user.strava_access_token:
+            return {"status": "skipped", "detail": "User has no Strava connection"}
+
+        synced, skipped, errors = sync_strava_activities(db=db, user=user)
+        return {
+            "status": "success",
+            "user_id": user_id,
+            "synced": synced,
+            "skipped": skipped,
+            "errors": errors,
+        }
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"sync_user_strava_activities failed for user {user_id}: {exc}")
+        raise exc
+    finally:
+        db.close()
+
+
+@celery_app.task(
+    name="app.worker.sync_all_strava_activities",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=300,
+    retry_jitter=True,
+    max_retries=2,
+)
+def sync_all_strava_activities(self) -> Dict[str, Any]:
+    """
+    Beat-scheduled task (daily at 06:00 UTC).
+    Iterates all Strava-connected users and syncs their activities.
+    """
+    from app.services.strava_sync import sync_strava_activities
+
+    db = SessionLocal()
+    processed = total_synced = total_skipped = total_errors = 0
+    try:
+        connected_users = (
+            db.query(User)
+            .filter(User.strava_access_token.isnot(None))
+            .all()
+        )
+        logger.info(f"Daily Strava sync: processing {len(connected_users)} connected users")
+
+        for user in connected_users:
+            try:
+                synced, skipped, errors = sync_strava_activities(db=db, user=user)
+                total_synced += synced
+                total_skipped += skipped
+                total_errors += errors
+                processed += 1
+            except Exception as exc:
+                logger.error(f"Strava sync failed for user_id={user.id}: {exc}")
+                total_errors += 1
+
+        return {
+            "status": "success",
+            "users_processed": processed,
+            "total_synced": total_synced,
+            "total_skipped": total_skipped,
+            "total_errors": total_errors,
+        }
     finally:
         db.close()

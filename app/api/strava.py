@@ -13,6 +13,7 @@ from app.schemas.strava import (
     StravaDisconnectResponse,
     StravaStatusResponse,
 )
+from app.schemas.strava_sync import StravaSyncResponse
 from app.services.strava import (
     disconnect_strava,
     exchange_code_for_tokens,
@@ -20,6 +21,7 @@ from app.services.strava import (
     save_strava_tokens,
     verify_oauth_state,
 )
+from app.services.strava_sync import sync_strava_activities
 
 logger = logging.getLogger("ai_fitness.api.strava")
 
@@ -144,4 +146,41 @@ def disconnect_strava_account(
     return StravaDisconnectResponse(
         status="disconnected",
         message="Strava account successfully unlinked",
+    )
+
+
+@router.post(
+    "/sync",
+    response_model=StravaSyncResponse,
+    summary="Sync Strava activities",
+    description="Fetches recent activities from Strava and imports them as workout sessions, skipping duplicates.",
+)
+def sync_strava_activities_endpoint(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Synchronously fetches and imports the user's recent Strava activities.
+    Skips any activities that have already been imported (by strava_activity_id).
+    """
+    if not current_user.strava_access_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No Strava account connected. Use /integrations/strava/connect first.",
+        )
+
+    try:
+        synced, skipped, errors = sync_strava_activities(db=db, user=current_user)
+    except Exception as exc:
+        logger.error(f"Strava sync failed for user {current_user.id}: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to sync activities from Strava",
+        )
+
+    return StravaSyncResponse(
+        synced=synced,
+        skipped=skipped,
+        errors=errors,
+        message=f"Imported {synced} activities, skipped {skipped} duplicates",
     )
