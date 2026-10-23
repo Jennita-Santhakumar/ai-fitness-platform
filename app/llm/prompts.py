@@ -1,10 +1,18 @@
 import json
+import logging
 import re
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 
 from app.schemas.plan import Plan
 from app.llm.base import LLMProvider
 from app.llm.factory import get_llm_provider
+
+try:
+    from app.services.memory import query_memory
+except ImportError:
+    query_memory = None
+
+logger = logging.getLogger("ai_fitness.prompts")
 
 
 def get_system_prompt() -> str:
@@ -29,9 +37,10 @@ def get_system_prompt() -> str:
     )
 
 
-def get_user_prompt(inputs: Dict[str, Any]) -> str:
+def get_user_prompt(inputs: Dict[str, Any], memory_context: Optional[str] = None) -> str:
     """
     Formats user fitness requirements into a structured prompt.
+    Optionally includes memory context retrieved from ChromaDB.
     """
     goal = inputs.get("goal", "General Fitness")
     level = inputs.get("level", "Intermediate")
@@ -40,16 +49,74 @@ def get_user_prompt(inputs: Dict[str, Any]) -> str:
     duration_weeks = inputs.get("weeks", 4)
     injuries = inputs.get("injuries", "None")
 
-    return (
+    prompt = (
         f"Generate a customized workout plan with the following specifications:\n"
         f"- Primary Goal: {goal}\n"
         f"- Experience Level: {level}\n"
         f"- Available Equipment: {equipment}\n"
         f"- Days per Week: {days_per_week}\n"
         f"- Duration in Weeks: {duration_weeks}\n"
-        f"- Physical Limitations / Injuries: {injuries}\n\n"
-        f"Generate the full {duration_weeks}-week progression complying strictly with the JSON schema."
+        f"- Physical Limitations / Injuries: {injuries}\n"
     )
+
+    if memory_context:
+        prompt += (
+            f"\n--- TRAINING HISTORY CONTEXT ---\n"
+            f"The following is the user's recent training history and past plans. "
+            f"Use this context to personalise the plan — avoid repeating the same "
+            f"exercises if the user has been doing them recently, and ensure progressive "
+            f"overload based on their recent performance:\n\n"
+            f"{memory_context}\n"
+            f"--- END TRAINING HISTORY ---\n"
+        )
+
+    prompt += f"\nGenerate the full {duration_weeks}-week progression complying strictly with the JSON schema."
+    return prompt
+
+
+def retrieve_memory_context(user_id: int, inputs: Dict[str, Any], n_results: int = 5) -> Optional[str]:
+    """
+    Retrieves relevant training history from ChromaDB to inject as context
+    into the plan generation prompt.
+
+    Returns a formatted string of relevant memories, or None if the user
+    has no memory store or no relevant results.
+    """
+    if query_memory is None:
+        logger.debug("ChromaDB memory service not available, skipping memory retrieval")
+        return None
+
+    # Build a query from the user's plan inputs
+    goal = inputs.get("goal", "workout")
+    level = inputs.get("level", "")
+    equipment = inputs.get("equipment", "")
+    query_text = f"{goal} {level} {equipment}".strip()
+
+    if not query_text:
+        return None
+
+    try:
+        results = query_memory(user_id=user_id, query_text=query_text, n_results=n_results)
+    except Exception as exc:
+        logger.warning(f"Memory retrieval failed for user {user_id}: {exc}")
+        return None
+
+    if not results:
+        return None
+
+    # Format results into context string
+    context_parts = []
+    for i, item in enumerate(results, 1):
+        doc = item.get("document", "")
+        meta = item.get("metadata", {})
+        doc_type = meta.get("type", "unknown")
+        date_str = meta.get("date", "")
+        header = f"[{doc_type.upper()}]"
+        if date_str:
+            header += f" ({date_str})"
+        context_parts.append(f"{i}. {header}: {doc}")
+
+    return "\n".join(context_parts)
 
 
 def strip_code_fences(raw_text: str) -> str:
@@ -74,18 +141,27 @@ def strip_code_fences(raw_text: str) -> str:
     return text
 
 
-def generate_plan(inputs: Dict[str, Any], provider: Optional[LLMProvider] = None) -> Plan:
+def generate_plan(inputs: Dict[str, Any], provider: Optional[LLMProvider] = None, user_id: Optional[int] = None) -> Plan:
     """
     Generates a validated Plan from user inputs using the configured LLM provider.
     
-    1. Formats system & user prompts.
-    2. Calls the LLM provider.
-    3. Strips code fences and isolates JSON.
-    4. Parses JSON and validates against the strict Plan Pydantic schema.
+    1. Optionally retrieves relevant memory context from ChromaDB (if user_id provided).
+    2. Formats system & user prompts.
+    3. Calls the LLM provider.
+    4. Strips code fences and isolates JSON.
+    5. Parses JSON and validates against the strict Plan Pydantic schema.
     """
     llm = provider or get_llm_provider()
     system_prompt = get_system_prompt()
-    user_prompt = get_user_prompt(inputs)
+
+    # Retrieve memory context if user_id is available
+    memory_context = None
+    if user_id is not None:
+        memory_context = retrieve_memory_context(user_id=user_id, inputs=inputs)
+        if memory_context:
+            logger.info(f"Injected memory context for user_id={user_id} into plan prompt")
+
+    user_prompt = get_user_prompt(inputs, memory_context=memory_context)
 
     raw_response = llm.generate(prompt=user_prompt, system_prompt=system_prompt)
     cleaned_json_str = strip_code_fences(raw_response)

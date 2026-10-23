@@ -157,12 +157,40 @@
     - Implemented client idempotency key (`idempotency_key`) on `PlanGenerateRequest` and cached check inside `generate_plan_task` to prevent duplicate LLM calls and duplicate plan generation on network retries.
     - Built a dead-letter failure tracking mechanism utilizing Celery's `@task_failure.connect` signal to capture permanently failed tasks, logging structured context and pushing records to `celery:dead_letter_queue` in Redis.
     - Mastered Celery eager test-mode internals (`task_store_eager_result=True`, in-memory cache isolation) achieving 80 passing automated unit/integration tests with 100% green status.
-- [ ] **Day 20: Strava OAuth** (`feat(integrations): add strava oauth`)
-- [ ] **Day 21: Strava sync and tag v0.3** (`feat(integrations): add strava activity sync`)
+- [x] **Day 20: Strava OAuth**
+  - Goal: Connect Strava account and manage tokens.
+  - Commit: `feat(integrations): add strava oauth`
+  - Learning Log:
+    - Implemented OAuth2 authorization flow with `/connect`, `/callback`, `/status`, and `/disconnect` endpoints.
+    - Built token exchange, automatic token refresh on expiration, and secure disconnect handlers in `app/services/strava.py`.
+    - Generated Alembic migration `0005_add_strava_tokens_to_user.py` storing athlete ID, tokens, expiry, and scopes.
+    - Added automated unit test suite covering complete OAuth lifecycle and token refresh (27 tests passing).
+- [x] **Day 21: Strava sync and tag v0.3**
+  - Goal: Sync user activities into session history.
+  - Commit: `feat(integrations): add strava activity sync`
+  - Learning Log:
+    - Added `app/services/strava_sync.py` to fetch, transform, and upsert Strava activities into `WorkoutSession`.
+    - Added `POST /strava/sync` endpoint and Celery background sync tasks (`sync_user_strava_activities`, `sync_all_strava_activities`).
+    - Created migration `0006_add_strava_activity_id_to_sessions.py` to prevent duplicate activity ingestion.
+    - Verified full test suite and tagged milestone release `v0.3`.
 
 ## Milestone 4: Memory, Nutrition, Dashboard (Days 22–29)
-- [ ] **Day 22: ChromaDB memory store** (`feat(memory): add chromadb memory store`)
-- [ ] **Day 23: Retrieval in prompts** (`feat(plans): add memory retrieval to prompts`)
+- [x] **Day 22: ChromaDB memory store**
+  - Goal: Vector store for user workout history and preferences.
+  - Commit: `feat(memory): add chromadb memory store`
+  - Learning Log:
+    - Implemented lazy-initialized ChromaDB client with persistent local storage configurable via `CHROMA_PERSIST_DIR`.
+    - Created isolated per-user collections with CRUD helpers: single/batch upsert, query with distance filtering, deletion, and reset.
+    - Built domain ingestion helpers for workout sessions and AI plans with type and date metadata tags.
+    - Wrote comprehensive unit test suite covering user isolation, document upsert, and semantic search (13 tests passing).
+- [x] **Day 23: Retrieval in prompts**
+  - Goal: Inject retrieved memories into LLM prompt for personalized planning.
+  - Commit: `feat(plans): add memory retrieval to prompts`
+  - Learning Log:
+    - Implemented `retrieve_memory_context` querying ChromaDB based on target goal, level, and equipment.
+    - Augmented user prompt templates to include structured `TRAINING HISTORY CONTEXT` block.
+    - Extended `generate_plan` with optional `user_id` to dynamically fetch and inject memory context into LLM prompts.
+    - Tested prompt formatting, graceful fallback when memory is empty, and mock LLM plan generation (10 tests passing).
 - [ ] **Day 24: USDA nutrition client** (`feat(nutrition): add usda client and search`)
 - [ ] **Day 25: Nutrition log** (`feat(nutrition): add food log and daily summary`)
 - [ ] **Day 26: React scaffold + auth** (`feat(ui): add react app with auth`)
