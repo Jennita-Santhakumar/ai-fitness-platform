@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     STRAVA_CLIENT_SECRET: str = ""
     STRAVA_REDIRECT_URI: str = "http://localhost:8000/integrations/strava/callback"
 
+    # ChromaDB Memory Store (Milestone 4, Day 22)
+    CHROMA_PERSIST_DIR: str = "./chroma_data"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
