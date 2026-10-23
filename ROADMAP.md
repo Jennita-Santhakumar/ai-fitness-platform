@@ -227,7 +227,15 @@
     - Designed structured plan view displaying multi-week progression, daily focus, and detailed exercise tables (sets, reps, rest, notes).
     - Built `Sessions` page with manual workout logger (date, duration, notes) and Strava background sync trigger with instant UI refresh.
     - Added session history timeline distinguishing manual entries from Strava synced activities with deletion capability.
-- [ ] **Day 28: Nutrition page + dashboard** (`feat(ui): add nutrition page and dashboard`)
+- [x] **Day 28: Nutrition page + dashboard**
+  - Goal: See progress.
+  - Commit: `feat(ui): add nutrition page and dashboard`
+  - Learning Log:
+    - Created `Nutrition` page with real-time USDA food search, serving weight adjustments, dynamic macro calculations, and date-filtered daily logs.
+    - Implemented daily macro summary cards aggregating calories, protein, carbohydrates, and fat against user targets.
+    - Integrated `Recharts` visualizations in `Dashboard` showing last 7 days of workout minutes and 5-day caloric intake trend.
+    - Built comprehensive Strava connection and sync widget directly inside the athlete dashboard.
+    - Added display cards for daily workout briefings (`GET /briefings/today`) and weekly coaching reviews (`GET /reviews/latest`).
 - [ ] **Day 29: Integrate, polish, tag v0.5** (`chore: integrate and polish for v0.5`)
 
 ## Milestone 5: Quality and Ship (Days 30–35)

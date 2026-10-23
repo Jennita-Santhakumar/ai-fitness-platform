@@ -7,6 +7,7 @@ import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Plans } from './pages/Plans';
 import { Sessions } from './pages/Sessions';
+import { Nutrition } from './pages/Nutrition';
 
 function App() {
   return (
@@ -36,6 +37,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Sessions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/nutrition"
+            element={
+              <ProtectedRoute>
+                <Nutrition />
               </ProtectedRoute>
             }
           />
